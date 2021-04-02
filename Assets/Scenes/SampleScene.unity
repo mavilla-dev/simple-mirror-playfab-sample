@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18284f36fdfccf542bc420839061903b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BuildType: 4
+  BuildType: 3
   BuildID: b07c5641-8c70-486c-949b-0f7d0fa7dd4a
   AzureRegions: 05000000
   UserName: simple-server-hosting
