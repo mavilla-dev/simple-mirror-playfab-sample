@@ -37,7 +37,9 @@ public class Configuration : MonoBehaviour
     GameLogger.Info($"[SimpleMirrorPlayFabSample] RUNNING AS {BuildType}");
   }
 
-  public bool IsServer => BuildType == BuildType.SERVER_ON_PLAYFAB || BuildType == BuildType.SERVER_ON_LOCAL;
+  public bool IsServer => 
+    BuildType == BuildType.SERVER_ON_PLAYFAB || BuildType == BuildType.SERVER_ON_LOCAL;
+
   public bool IsClient => BuildType == BuildType.CLIENT_TO_PLAYFAB
     || BuildType == BuildType.CLIENT_TO_PLAYFAB_LOCALE
     || BuildType == BuildType.CLIENT_TO_LOCAL;

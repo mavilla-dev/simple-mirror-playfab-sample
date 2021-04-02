@@ -5,25 +5,11 @@ using UnityEngine;
 
 public class ClientManagerBehaviour : MonoBehaviour
 {
-  TelepathyTransport _transport;
-
   // PlayFab Login Info
   PlayFab.ClientModels.LoginResult _loginData = null;
 
-  private void OnEnable()
-  {
-    // We assume GameManager.Instance gets set on Awake
-    // Destroy GameObject if running the server
-    if (Configuration.Instance.IsServer)
-    {
-      enabled = false;
-    }
-  }
-
   void Start()
   {
-    _transport = FindObjectOfType<TelepathyTransport>();
-
     PlayFab.ClientModels.LoginWithCustomIDRequest request = new PlayFab.ClientModels.LoginWithCustomIDRequest();
     request.CustomId = Configuration.Instance.UserName;
     request.CreateAccount = true;
@@ -77,10 +63,11 @@ public class ClientManagerBehaviour : MonoBehaviour
 
   private void ConnectToServerWithIpAndPort(string ipAddress, ushort gamePort)
   {
-    _transport.port = gamePort;
+    var transport = Transport.activeTransport as TelepathyTransport;
+    transport.port = gamePort;
     NetworkManager.singleton.networkAddress = ipAddress;
 
-    GameLogger.Info($"Connecting to {NetworkManager.singleton.networkAddress}:{_transport.port}");
+    GameLogger.Info($"Connecting to {NetworkManager.singleton.networkAddress}:{transport.port}");
 
     NetworkManager.singleton.StartClient();
   }
