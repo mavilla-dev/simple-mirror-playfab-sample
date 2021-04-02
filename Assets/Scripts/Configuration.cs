@@ -7,7 +7,8 @@ using UnityEngine;
 public enum BuildType
 {
   SERVER,
-  CLIENT
+  CLIENT_TO_PLAYFAB,
+  CLIENT_TO_PLAYFAB_LOCALE,
 }
 
 public class Configuration : MonoBehaviour
@@ -33,7 +34,7 @@ public class Configuration : MonoBehaviour
   }
 
   public bool IsServer => BuildType == BuildType.SERVER;
-  public bool IsClient => BuildType == BuildType.CLIENT;
+  public bool IsClient => BuildType == BuildType.CLIENT_TO_PLAYFAB || BuildType == BuildType.CLIENT_TO_PLAYFAB_LOCALE;
 
   public List<string> GetAzureRegionList() => AzureRegions.Select(x => x.ToString()).ToList();
 }

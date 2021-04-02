@@ -1,6 +1,7 @@
 using kcp2k;
 using Mirror;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 public class ServerManagerBehaviour : MonoBehaviour
@@ -26,32 +27,36 @@ public class ServerManagerBehaviour : MonoBehaviour
     PlayFab.PlayFabMultiplayerAgentAPI.OnShutDownCallback += PF_OnShutDown;
 
     StartCoroutine(ReadyForPlayersInSeconds(5));
-    StartCoroutine(ShutDownServerInMinutes(5));
-  }
-
-  private IEnumerator ShutDownServerInMinutes(int minutes)
-  {
-    yield return new WaitForSeconds(60 * minutes);
-    BeginShutDown();
   }
 
   private IEnumerator ReadyForPlayersInSeconds(int seconds)
   {
     // Not sure why this would be needed yet...
     yield return new WaitForSeconds(seconds);
+    
     PlayFab.PlayFabMultiplayerAgentAPI.ReadyForPlayers();
+
+    StartCoroutine(ShutDownServerInMinutes(5));
   }
 
   private void PF_OnServerActive()
   {
-    _transport.Port = 3600;
-    NetworkManager.singleton.networkAddress = PlayFab.PlayFabMultiplayerAgentAPI.PublicIpV4AddressKey;
+    var connectionInfo = PlayFab.PlayFabMultiplayerAgentAPI.GetGameServerConnectionInfo();
+    var gamePortData = connectionInfo.GamePortsConfiguration.Single(x => x.Name == "game_port");
+    _transport.Port = (ushort)gamePortData.ServerListeningPort;
+    // NetworkManager.singleton.networkAddress = PlayFab.PlayFabMultiplayerAgentAPI.PublicIpV4AddressKey;
     NetworkManager.singleton.StartServer();
     GameLogger.Info("STARTED SERVER");
   }
 
   private void PF_OnShutDown()
   {
+    BeginShutDown();
+  }
+
+  private IEnumerator ShutDownServerInMinutes(int minutes)
+  {
+    yield return new WaitForSeconds(60 * minutes);
     BeginShutDown();
   }
 

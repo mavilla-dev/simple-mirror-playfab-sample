@@ -45,7 +45,17 @@ public class ClientManagerBehaviour : MonoBehaviour
     GameLogger.Info("Login was successful");
     _loginData = obj;
 
-    RequestServer();
+    switch (Configuration.Instance.BuildType)
+    {
+      case BuildType.CLIENT_TO_PLAYFAB:
+        RequestServer();
+        break;
+
+      case BuildType.CLIENT_TO_PLAYFAB_LOCALE:
+        // 56100 is the NodePort on the MultiplayerSettings.json for the local VM
+        StartClientConnection("localhost", 56100);
+        break;
+    }
   }
 
   private void RequestServer()
@@ -61,12 +71,16 @@ public class ClientManagerBehaviour : MonoBehaviour
     PlayFab.PlayFabMultiplayerAPI.RequestMultiplayerServer(request, OnRequestMPServer, OnError);
   }
 
-  private void OnRequestMPServer(RequestMultiplayerServerResponse obj)
+  private void OnRequestMPServer(RequestMultiplayerServerResponse obj) =>
+    StartClientConnection(obj.IPV4Address, (ushort)obj.Ports.First().Num);
+
+  private void StartClientConnection(string ipAddress, ushort gamePort)
   {
-    _transport.Port = (ushort)obj.Ports.First().Num;
-    NetworkManager.singleton.networkAddress = obj.IPV4Address;
+    _transport.Port = gamePort;
+    NetworkManager.singleton.networkAddress = ipAddress;
 
     GameLogger.Info($"Connecting to {NetworkManager.singleton.networkAddress}:{_transport.Port}");
+
     NetworkManager.singleton.StartClient();
   }
 }
