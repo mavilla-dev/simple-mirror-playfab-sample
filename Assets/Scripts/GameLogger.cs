@@ -7,7 +7,7 @@ class GameLogger
     Debug.Log("[SimpleMirrorPlayFabSample] " + msg);
   }
 
-  public static void LogError(string err)
+  public static void LogError(object err)
   {
     Debug.LogError("[SimpleMirrorPlayFabSample] " + err);
   }

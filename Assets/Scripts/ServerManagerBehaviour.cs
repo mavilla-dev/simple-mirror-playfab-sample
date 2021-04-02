@@ -1,4 +1,3 @@
-using kcp2k;
 using Mirror;
 using System.Collections;
 using System.Linq;
@@ -6,7 +5,11 @@ using UnityEngine;
 
 public class ServerManagerBehaviour : MonoBehaviour
 {
-  [SerializeField] KcpTransport _transport;
+  TelepathyTransport _transport;
+
+  // This variable needs to be hardcoded in your MultiplayerSettings.json for localVM
+  // In addition to also being set on your PlayFab server build settings.
+  string _playFabPortName = "game_port";
 
   private void OnEnable()
   {
@@ -14,54 +17,78 @@ public class ServerManagerBehaviour : MonoBehaviour
     // Destroy GameObject if running the client
     if (Configuration.Instance.IsClient)
     {
-      gameObject.SetActive(false);
-      Destroy(gameObject);
+      enabled = false;
     }
   }
 
   void Start()
   {
+    _transport = FindObjectOfType<TelepathyTransport>();
     GameLogger.Info("STARTING UP SERVER LOGIC");
-    PlayFab.PlayFabMultiplayerAgentAPI.Start();
-    PlayFab.PlayFabMultiplayerAgentAPI.OnServerActiveCallback += PF_OnServerActive;
-    PlayFab.PlayFabMultiplayerAgentAPI.OnShutDownCallback += PF_OnShutDown;
 
-    StartCoroutine(ReadyForPlayersInSeconds(5));
+    switch (Configuration.Instance.BuildType)
+    {
+      case BuildType.SERVER_ON_LOCAL:
+        OpenServerOnIpAndPort(Configuration.Instance.LocalIp, Configuration.Instance.LocalPort);
+        break;
+
+      case BuildType.SERVER_ON_PLAYFAB:
+        PreparePlayFabServer();
+        break;
+    }
   }
 
-  private IEnumerator ReadyForPlayersInSeconds(int seconds)
+  void PreparePlayFabServer()
   {
-    // Not sure why this would be needed yet...
-    yield return new WaitForSeconds(seconds);
-    
-    PlayFab.PlayFabMultiplayerAgentAPI.ReadyForPlayers();
+    PlayFab.PlayFabMultiplayerAgentAPI.Start();
+    PlayFab.PlayFabMultiplayerAgentAPI.OnServerActiveCallback += OnServerActive;
+    PlayFab.PlayFabMultiplayerAgentAPI.OnShutDownCallback += OnServerShutDown;
+    PlayFab.PlayFabMultiplayerAgentAPI.OnAgentErrorCallback += OnServerError;
 
-    StartCoroutine(ShutDownServerInMinutes(5));
+    PlayFab.PlayFabMultiplayerAgentAPI.ReadyForPlayers();
   }
 
-  private void PF_OnServerActive()
+  private void OnServerError(string error)
+  {
+    GameLogger.LogError(error);
+  }
+
+  void OnServerActive()
   {
     var connectionInfo = PlayFab.PlayFabMultiplayerAgentAPI.GetGameServerConnectionInfo();
-    var gamePortData = connectionInfo.GamePortsConfiguration.Single(x => x.Name == "game_port");
-    _transport.Port = (ushort)gamePortData.ServerListeningPort;
-    // NetworkManager.singleton.networkAddress = PlayFab.PlayFabMultiplayerAgentAPI.PublicIpV4AddressKey;
-    NetworkManager.singleton.StartServer();
-    GameLogger.Info("STARTED SERVER");
+    var gamePortData = connectionInfo.GamePortsConfiguration.Single(x => x.Name == _playFabPortName);
+    var playFabInternalIP = "localhost";
+
+    OpenServerOnIpAndPort(playFabInternalIP, (ushort)gamePortData.ServerListeningPort);
+
+    // StartCoroutine(ShutDownServerInMinutes(5));
   }
 
-  private void PF_OnShutDown()
+  void OnServerShutDown()
   {
+    GameLogger.Info("Server starting shutdown process");
     BeginShutDown();
   }
 
-  private IEnumerator ShutDownServerInMinutes(int minutes)
+  void OpenServerOnIpAndPort(string serverIp, ushort serverPort)
+  {
+    _transport.port = serverPort;
+    NetworkManager.singleton.networkAddress = serverIp;
+    NetworkManager.singleton.StartServer();
+    GameLogger.Info($"Serving is started on {NetworkManager.singleton.networkAddress}:{_transport.port}");
+  }
+
+
+  IEnumerator ShutDownServerInMinutes(int minutes)
   {
     yield return new WaitForSeconds(60 * minutes);
+
     BeginShutDown();
   }
 
-  private void BeginShutDown()
+  void BeginShutDown()
   {
+    GameLogger.Info("Closing application");
     Application.Quit();
   }
 }
