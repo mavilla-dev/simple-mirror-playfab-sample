@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: PlayFabEditorPrefsSO
   m_EditorClassIdentifier: 
   DevAccountEmail: mavilla.dev@gmail.com
-  DevAccountToken: jywm7xsyxkjhuimrj89opj4xod53zfsnu9m8atoq8cgj1gt3fi79a5391gnaqkp9oczuckpzork858yyxzbh6bungi644q81jexhno337jfp49uz6esb5ibecpzkh13hiqa5z6zqraof5ufk88xnjx7gztuyiuap4kk7u54dc71rtcza1j51xyzf6z7rfad9yeocsk5z
+  DevAccountToken: cdx7hjunkyiko453wmod5kd6yzhkg5s9aeyotey1xh6cxy13yk9acn4kksffa56769jape1pz3hxdkcm8gh3z38nxuax5bg1wzkuizdz1ggakjkgqg1amgqozkucyqrdpgzbp4cgqhnrnn39pddyy7b77uyjeucmjpyqic51k65pzbn5mmp7r13dhikjh1pisns9b1jh
   SelectedStudio: MadDude Games
   SdkPath: Assets/PlayFabSDK
   EdExPath: 
   LocalCloudScriptPath: 
   PanelIsShown: 0
   curMainMenuIdx: 1
-  curSubMenuIdx: 1
+  curSubMenuIdx: 0

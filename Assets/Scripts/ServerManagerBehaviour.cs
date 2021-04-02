@@ -22,10 +22,10 @@ public class ServerManagerBehaviour : MonoBehaviour
   {
     GameLogger.Info("STARTING UP SERVER LOGIC");
     PlayFab.PlayFabMultiplayerAgentAPI.Start();
-    PlayFab.PlayFabMultiplayerAgentAPI.OnServerActiveCallback += OnServerActive;
-    PlayFab.PlayFabMultiplayerAgentAPI.OnShutDownCallback += OnShutDown;
+    PlayFab.PlayFabMultiplayerAgentAPI.OnServerActiveCallback += PF_OnServerActive;
+    PlayFab.PlayFabMultiplayerAgentAPI.OnShutDownCallback += PF_OnShutDown;
 
-    PlayFab.PlayFabMultiplayerAgentAPI.ReadyForPlayers();
+    StartCoroutine(ReadyForPlayersInSeconds(5));
     StartCoroutine(ShutDownServerInMinutes(5));
   }
 
@@ -35,14 +35,22 @@ public class ServerManagerBehaviour : MonoBehaviour
     BeginShutDown();
   }
 
-  private void OnServerActive()
+  private IEnumerator ReadyForPlayersInSeconds(int seconds)
   {
-    _transport.Port = 7777;
+    // Not sure why this would be needed yet...
+    yield return new WaitForSeconds(seconds);
+    PlayFab.PlayFabMultiplayerAgentAPI.ReadyForPlayers();
+  }
+
+  private void PF_OnServerActive()
+  {
+    _transport.Port = 3600;
+    NetworkManager.singleton.networkAddress = PlayFab.PlayFabMultiplayerAgentAPI.PublicIpV4AddressKey;
     NetworkManager.singleton.StartServer();
     GameLogger.Info("STARTED SERVER");
   }
 
-  private void OnShutDown()
+  private void PF_OnShutDown()
   {
     BeginShutDown();
   }

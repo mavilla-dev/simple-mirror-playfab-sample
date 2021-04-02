@@ -57,6 +57,7 @@ public class ClientManagerBehaviour : MonoBehaviour
       PreferredRegions = Configuration.Instance.GetAzureRegionList()
     };
 
+    GameLogger.Info($"Requesting Server with SessionID:{request.SessionId}");
     PlayFab.PlayFabMultiplayerAPI.RequestMultiplayerServer(request, OnRequestMPServer, OnError);
   }
 
@@ -65,6 +66,7 @@ public class ClientManagerBehaviour : MonoBehaviour
     _transport.Port = (ushort)obj.Ports.First().Num;
     NetworkManager.singleton.networkAddress = obj.IPV4Address;
 
+    GameLogger.Info($"Connecting to {NetworkManager.singleton.networkAddress}:{_transport.Port}");
     NetworkManager.singleton.StartClient();
   }
 }
